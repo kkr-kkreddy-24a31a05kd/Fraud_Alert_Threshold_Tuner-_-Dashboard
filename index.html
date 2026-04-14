@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Fraud Alert Threshold Tuner Dashboard | AI-Powered Fraud Detection</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.1.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        body.dark-mode .header,
+        body.dark-mode .left-panel,
+        body.dark-mode .center-panel,
+        body.dark-mode .right-panel {
+            background: #2d2d3d;
+            color: #e0e0e0;
+        }
+        body.dark-mode .metric-box {
+            background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
+        }
+        body.dark-mode .matrix-cell {
+            background: #3d3d4d;
+            color: #e0e0e0;
+        }
+        body.dark-mode .transaction-item {
+            background: #3d3d4d;
+            border-bottom-color: #4d4d5d;
+        }
+        body.dark-mode .transaction-item:hover {
+            background: #4d4d5d;
+        }
+        body.dark-mode .explanation-panel {
+            background: #3d3d4d;
+        }
+        body.dark-mode .explanation-item {
+            background: #2d2d3d;
+        }
+
+        /* Header Section */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+
+        /* Main Container */
+        .dashboard-container {
+            display: flex;
+            gap: 20px;
+            padding: 0 20px 20px 20px;
+        }
+
+        /* Left Panel - Controls */
+        .left-panel {
+            width: 280px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            transition: all 0.3s ease;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+            color: #333;
+        }
+
+        body.dark-mode .control-group label {
+            color: #e0e0e0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .threshold-value {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 10px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            flex: 1;
+            padding: 5px;
+            font-size: 11px;
+            margin-top: 0;
+            background: #f0f0f0;
+            color: #667eea;
+            border: 1px solid #ddd;
+        }
+        .preset-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: none;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Center Panel */
+        .center-panel {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            width: 320px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn {
+            margin-bottom: 15px;
+            padding: 12px;
+            font-weight: 600;
+        }
+
+        .btn-deploy {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-simulate {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        /* Transaction Table */
+        .transaction-feed {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .transaction-feed::-webkit-scrollbar {
+            width: 8px;
+        }
+        .transaction-feed::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .transaction-feed::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        .transaction-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .transaction-item:hover {
+            background: #f5f5f5;
+        }
+
+        .risk-high {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .risk-suspicious {
+            color: #ffc107;
+            font-weight: bold;
+        }
+
+        .risk-normal {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        /* Search Box */
+        .search-box {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding-left: 35px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        /* Filter Group */
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .filter-group select, .filter-group input {
+            flex: 1;
+            margin-top: 0;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .metric-box:hover {
+            transform: scale(1.05);
+        }
+
+        .metric-box h4 {
+            font-size: 12px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        .metric-box .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Confusion Matrix */
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .matrix-cell {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .matrix-cell:hover {
+            transform: scale(1.05);
+        }
+
+        .matrix-cell .label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .matrix-cell .value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Explanation Panel */
+        .explanation-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .explanation-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Risk Gauge */
+        #risk-gauge {
+            margin: 15px 0;
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        /* Shortcut Hint */
+        .shortcut-hint {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        /* Last Update */
+        .last-update {
+            font-size: 11px;
+            color: #999;
+            margin-top: 10px;
+            text-align: right;
+        }
+        .real-time-clock {
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: auto !important;
+            z-index: 1000;
+            padding: 10px 15px !important;
+            border-radius: 25px !important;
+            background: rgba(0,0,0,0.7) !important;
+        }
+
+        /* Alert Badge */
+        .alert-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideInRight 0.5s ease-out;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            .left-panel, .right-panel {
+                width: 100%;
+            }
+            .filter-group {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            .confusion-matrix {
+                grid-template-columns: 1fr;
+            }
+            .header .row > div {
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            border-radius: 15px;
+        }
+        .transaction-detail {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle">
+        <i class="fas fa-moon"></i> Dark Mode
+    </button>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h2><i class="fas fa-shield-alt"></i> Fraud Alert Threshold Tuner</h2>
+                    <p>Dynamic Fraud Detection Dashboard</p>
+                </div>
+                <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="status-badge status-active">
+                                <i class="fas fa-circle"></i> SYSTEM ACTIVE
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <small>Last Retrained:</small><br>
+                            <strong id="last-retrained">2026-03-28</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <small>Model Accuracy:</small><br>
+                            <strong id="model-accuracy">--</strong>
+                        </div>
+                        <div class="col-md-3">
+                            <small>Real-time Clock:</small><br>
+                            <strong id="real-time-clock" class="real-time-clock">--:--:--</strong>
+                        </div>
+                    </div>
+                    <div class="last-update">
+                        <i class="fas fa-sync-alt"></i> Last Updated: <span id="last-update-time">Just now</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Left Panel - Controls -->
+        <div class="left-panel">
+            <h5><i class="fas fa-sliders-h"></i> Control Panel</h5>
+            
+            <div class="control-group">
+                <label>Sensitivity Threshold</label>
+                <input type="range" id="threshold-slider" min="0" max="1" step="0.01" value="0.5">
+                <div class="threshold-value">
+                    <span id="threshold-value">0.50</span>
+                </div>
+                <div class="preset-buttons">
+                    <button class="preset-btn" onclick="setThreshold(0.3)">0.3 (High Recall)</button>
+                    <button class="preset-btn" onclick="setThreshold(0.5)">0.5 (Balanced)</button>
+                    <button class="preset-btn" onclick="setThreshold(0.7)">0.7 (High Precision)</button>
+                    <button class="preset-btn" onclick="setThreshold(0.9)">0.9 (Strict)</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Region</label>
+                <select id="region-select">
+                    <option value="IN">🇮🇳 India</option>
+                    <option value="US">🇺🇸 USA</option>
+                    <option value="UK">🇬🇧 UK</option>
+                    <option value="EU">🇪🇺 Europe</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Amount Range Filter</label>
+                <select id="amount-filter">
+                    <option value="all">All Amounts</option>
+                    <option value="0-5000">₹0 - ₹5,000</option>
+                    <option value="5000-15000">₹5,000 - ₹15,000</option>
+                    <option value="15000-50000">₹15,000 - ₹50,000</option>
+                    <option value="50000+">₹50,000+</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Date Range</label>
+                <input type="date" id="start-date">
+                <input type="date" id="end-date" style="margin-top: 5px;">
+            </div>
+
+            <div class="control-group">
+                <button id="auto-tune-btn">
+                    <i class="fas fa-magic"></i> Auto-Tune (Optimal Threshold)
+                </button>
+            </div>
+
+            <div class="shortcut-hint">
+                <i class="fas fa-keyboard"></i> Keyboard: ← → arrows to adjust threshold
+            </div>
+        </div>
+
+        <!-- Center Panel - Visual Analytics -->
+        <div class="center-panel">
+            <h5><i class="fas fa-chart-line"></i> Performance Metrics</h5>
+            
+            <div class="metrics-grid">
+                <div class="metric-box" onclick="showMetricInfo('precision')">
+                    <h4>Precision</h4>
+                    <div class="value" id="precision">--</div>
+                </div>
+                <div class="metric-box" onclick="showMetricInfo('recall')">
+                    <h4>Recall</h4>
+                    <div class="value" id="recall">--</div>
+                </div>
+                <div class="metric-box" onclick="showMetricInfo('f1')">
+                    <h4>F1 Score</h4>
+                    <div class="value" id="f1">--</div>
+                </div>
+                <div class="metric-box" onclick="showMetricInfo('accuracy')">
+                    <h4>Accuracy</h4>
+                    <div class="value" id="accuracy">--</div>
+                </div>
+            </div>
+
+            <div class="confusion-matrix">
+                <div class="matrix-cell" onclick="showTooltip('True Positives: Correctly identified fraud')">
+                    <div class="label">True Positive</div>
+                    <div class="value" id="tp">--</div>
+                </div>
+                <div class="matrix-cell" onclick="showTooltip('False Positives: Legitimate transactions flagged as fraud')">
+                    <div class="label">False Positive</div>
+                    <div class="value" id="fp">--</div>
+                </div>
+                <div class="matrix-cell" onclick="showTooltip('False Negatives: Fraud missed by system')">
+                    <div class="label">False Negative</div>
+                    <div class="value" id="fn">--</div>
+                </div>
+                <div class="matrix-cell" onclick="showTooltip('True Negatives: Correctly identified legitimate transactions')">
+                    <div class="label">True Negative</div>
+                    <div class="value" id="tn">--</div>
+                </div>
+            </div>
+
+            <!-- Risk Gauge -->
+            <div id="risk-gauge" style="height: 180px;"></div>
+
+            <div id="precision-recall-curve" style="height: 300px; margin-top: 20px;"></div>
+
+            <h5 style="margin-top: 20px;"><i class="fas fa-list"></i> Live Transaction Feed</h5>
+            
+            <div class="filter-group">
+                <div class="search-box" style="flex: 2;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-transaction" placeholder="Search by ID, Amount, Risk Level...">
+                </div>
+                <select id="risk-filter" style="flex: 1;">
+                    <option value="all">All Risks</option>
+                    <option value="High Risk">High Risk</option>
+                    <option value="Suspicious">Suspicious</option>
+                    <option value="Normal">Normal</option>
+                </select>
+            </div>
+            
+            <div class="transaction-feed" id="transaction-feed">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading transactions...
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Actions -->
+        <div class="right-panel">
+            <h5><i class="fas fa-cogs"></i> Actions</h5>
+            
+            <button id="deploy-btn" class="action-btn btn-deploy">
+                <i class="fas fa-rocket"></i> Deploy to Production
+            </button>
+            
+            <button id="download-csv-btn" class="action-btn">
+                <i class="fas fa-file-csv"></i> Download CSV Report
+            </button>
+            
+            <button id="download-excel-btn" class="action-btn" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <i class="fas fa-file-excel"></i> Export to Excel
+            </button>
+            
+            <button id="export-pdf-btn" class="action-btn" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                <i class="fas fa-file-pdf"></i> Export PDF Report
+            </button>
+            
+            <button id="simulate-attack-btn" class="action-btn btn-simulate">
+                <i class="fas fa-bug"></i> Simulate Attack
+            </button>
+            
+            <button id="calculate-roi-btn" class="action-btn" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                <i class="fas fa-chart-line"></i> Calculate ROI
+            </button>
+
+            <div id="explanation-panel" class="explanation-panel">
+                <h6><i class="fas fa-brain"></i> AI Explanation</h6>
+                <div id="explanation-content"></div>
+            </div>
+
+            <div id="simulation-results" style="margin-top: 20px; display: none;">
+                <h6><i class="fas fa-chart-bar"></i> What-If Analysis</h6>
+                <div id="simulation-chart" style="height: 250px;"></div>
+            </div>
+            
+            <div id="roi-results" style="margin-top: 20px; display: none; background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                <h6><i class="fas fa-dollar-sign"></i> ROI Calculator</h6>
+                <div id="roi-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details Modal -->
+    <div class="modal fade" id="transactionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-receipt"></i> Transaction Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    Loading...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alert-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999;"></div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
