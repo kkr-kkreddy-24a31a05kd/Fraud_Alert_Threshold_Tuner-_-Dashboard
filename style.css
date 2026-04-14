@@ -1,0 +1,439 @@
+/* Additional CSS styling for Fraud Alert Threshold Tuner Dashboard */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46a0 100%);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.dashboard-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.left-panel, .center-panel, .right-panel {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Transaction Feed Enhancements */
+.transaction-feed {
+    scroll-behavior: smooth;
+}
+
+.transaction-item {
+    animation: slideIn 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+.transaction-item:hover {
+    transform: translateX(5px);
+    background: linear-gradient(90deg, #f8f9fa 0%, #ffffff 100%);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Risk Level Badges */
+.risk-high, .risk-suspicious, .risk-normal {
+    transition: all 0.3s ease;
+}
+
+.risk-high {
+    color: #dc3545;
+    text-shadow: 0 0 2px rgba(220, 53, 69, 0.3);
+    animation: pulse 2s infinite;
+}
+
+.risk-suspicious {
+    color: #ffc107;
+}
+
+.risk-normal {
+    color: #28a745;
+}
+
+/* Button Hover Effects */
+.action-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.action-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.action-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.action-btn:active {
+    transform: scale(0.95);
+}
+
+/* Metric Box Enhancements */
+.metric-box {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.metric-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.metric-box .value {
+    transition: all 0.3s ease;
+}
+
+.metric-box:hover .value {
+    transform: scale(1.1);
+}
+
+/* Confusion Matrix Enhancements */
+.matrix-cell {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.matrix-cell:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+}
+
+/* Threshold Slider Custom Styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%);
+    border-radius: 10px;
+    height: 8px;
+}
+
+input[type="range"]:focus {
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+/* Threshold Value Display */
+.threshold-value {
+    animation: pulse 2s infinite;
+}
+
+/* Loading Spinner Enhancement */
+.spinner {
+    border-width: 4px;
+    border-style: solid;
+    border-color: #f3f3f3;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+/* Notification Styling */
+.alert {
+    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border: none;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+/* Chart Container Enhancements */
+#precision-recall-curve, #simulation-chart {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#precision-recall-curve:hover, #simulation-chart:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Explanation Panel Enhancement */
+.explanation-panel {
+    animation: fadeIn 0.5s ease-out;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+}
+
+.explanation-item {
+    transition: all 0.3s ease;
+}
+
+.explanation-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.progress {
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Responsive Design Enhancements */
+@media (max-width: 768px) {
+    .metric-box .value {
+        font-size: 18px;
+    }
+    
+    .metric-box h4 {
+        font-size: 10px;
+    }
+    
+    .transaction-item {
+        font-size: 12px;
+    }
+    
+    .threshold-value {
+        font-size: 18px;
+    }
+    
+    .action-btn {
+        font-size: 12px;
+        padding: 8px;
+    }
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+    
+    .left-panel, .center-panel, .right-panel, .header {
+        background: #2d2d3d;
+        color: #e0e0e0;
+    }
+    
+    .transaction-item {
+        background: #3d3d4d;
+        color: #e0e0e0;
+        border-bottom-color: #4d4d5d;
+    }
+    
+    .transaction-item:hover {
+        background: #4d4d5d;
+    }
+    
+    .matrix-cell {
+        background: #3d3d4d;
+        color: #e0e0e0;
+    }
+    
+    .matrix-cell .value {
+        color: #e0e0e0;
+    }
+    
+    .explanation-item {
+        background: #3d3d4d;
+        color: #e0e0e0;
+    }
+    
+    select, option {
+        background: #3d3d4d;
+        color: #e0e0e0;
+        border-color: #4d4d5d;
+    }
+}
+
+/* Print Styles for Reports */
+@media print {
+    .left-panel, .right-panel, .action-btn, .header .col-md-4:first-child {
+        display: none;
+    }
+    
+    .center-panel {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        background: white;
+    }
+    
+    .metric-box {
+        background: #f8f9fa;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+    
+    .transaction-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* Tooltip Styling */
+[data-tooltip] {
+    position: relative;
+    cursor: pointer;
+}
+
+[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background: #333;
+    color: white;
+    font-size: 12px;
+    border-radius: 5px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+[data-tooltip]:hover:before {
+    opacity: 1;
+}
+
+/* Status Badge Animation */
+.status-badge {
+    transition: all 0.3s ease;
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Footer Styling (if added later) */
+.footer {
+    text-align: center;
+    padding: 20px;
+    background: white;
+    margin-top: 20px;
+    color: #666;
+    font-size: 12px;
+}
+
+/* Custom Checkbox for Future Features */
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.custom-checkbox input {
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+/* Responsive Table for Small Screens */
+@media (max-width: 576px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .confusion-matrix {
+        grid-template-columns: 1fr;
+    }
+    
+    .dashboard-container {
+        padding: 0 10px 10px 10px;
+    }
+    
+    .header {
+        padding: 15px;
+    }
+    
+    .header h2 {
+        font-size: 18px;
+    }
+}
