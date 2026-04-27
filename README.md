@@ -30,8 +30,7 @@ Prerequisites
 Python 3.8 or higher
 pip package manager
 Steps
-Clone the repository
-git clone https://kkr-kkreddy-24a31a05kd.github.io/Fraud_Alert_Threshold_Tuner-_-Dashboard/.git
+
 cd Fraud_Alert_Threshold_Tuner_Dashboard
 Install dependencies
 pip install -r requirements.txt
